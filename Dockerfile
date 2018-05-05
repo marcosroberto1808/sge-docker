@@ -5,19 +5,15 @@ FROM centos:centos7
 LABEL author="marcos.roberto@defensoria.ce.def.br"
 ENV TZ=America/Fortaleza
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-ENV AMBIENTE "development"
-ENV APPNAME "app_alias.devel"
-ENV DB_HOST "192.168.xx.xx"
-ENV DB_USER "db_user"
-ENV DB_PASS "db_pass"
-ENV ROOT_DOMAIN "defensoria.ce.def.br"
+ARG AMBIENTE
+ARG APPNAME
+ARG DB_HOST
+ARG DB_NAME
+ARG DB_USER
+ARG DB_PASS
+ARG ROOT_DOMAIN
 ENV DOMAIN "${APPNAME}.${ROOT_DOMAIN}"
 ENV PORT 8080
-# Variaveis para GitHub
-ENV GIT_REPO "https://github.com/git_repositorio.git"
-ENV GIT_USERNAME "git_user"
-ENV GIT_PASSWORD "git_pass"
-ENV GIT_BRANCH "master"
 RUN echo ${DOMAIN}
 
 # Acesso SSH
@@ -39,23 +35,21 @@ RUN easy_install-3.4 pip
 RUN pip install virtualenv
 RUN virtualenv -p python3 /AppEnv
 
-# Adicionar arquivos
+# Adicionar arquivos de configuracao
 RUN mkdir -p /${DOMAIN}/cfg/
 RUN mkdir -p /${DOMAIN}/logs/
+RUN mkdir -p /${DOMAIN}/codigo/
 COPY ./arquivos/nginx.conf /${DOMAIN}/cfg/
 COPY ./arquivos/django.params /${DOMAIN}/cfg/
 COPY ./arquivos/django.ini /${DOMAIN}/cfg/
 COPY ./arquivos/.env /${DOMAIN}/cfg/
 COPY ./arquivos/static.zip /${DOMAIN}/cfg/
-
-# define mountable dirs
-VOLUME ["/var/log/nginx"]
+# Adicionar pasta do código do projeto
+COPY codigo/ /${DOMAIN}/codigo/
 
 # Add Usuario SSH , permissões de SUDO e arquivos para autenticacao do GIT
 RUN adduser --home=/${DOMAIN}/code -u 1000 ${SSH_USER}
 RUN echo -e "$SSH_PASS\n$SSH_PASS" | (passwd --stdin ${SSH_USER})
-COPY ./arquivos/.git-credentials /${DOMAIN}/code/
-RUN chown ${SSH_USER}:${SSH_USER} /${DOMAIN}/code/.git-credentials
 RUN echo "${SSH_USER} ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/${SSH_USER} && \
 chmod 0440 /etc/sudoers.d/${SSH_USER}
 

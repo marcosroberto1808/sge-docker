@@ -14,13 +14,17 @@ Para criar a imagem `centos7-dpge-python3`, execute o comando a seguir na pasta 
 
         docker build -t centos7-dpge-python3:latest .
 
+        ou com argumentos requeridos:
+
+        docker build -t teste-app --build-arg AMBIENTE=homolog --build-arg APPNAME=sge --build-arg DB_HOST=192.168.0.199 --build-arg DB_NAME=marcos_db --build-arg DB_USER=sge --build-arg DB_PASS=123456 --build-arg ROOT_DOMAIN=defensoria.ce.def.br .
+
 Para carregar a imagem e associar a portas externas:
 
         docker run -d -p 8080:8080 --name=APP_ALIAS centos7-dpge-python3
         
         ou com múltiplas portas:
 
-        docker run -h APP_ALIAS -d -p 8080:8080 -p 422:22 --name=APP_ALIAS centos7-dpge-python3  
+        docker run -h APP_ALIAS -d -p 8080:8080 -p 422:22 --name=APP_ALIAS centos7-dpge-python3
 
 Verificar os logs da aplicacao:
 
